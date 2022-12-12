@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    image: php:8.1-fpm
+    container_name: app
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www/src
+    volumes:
+      - ./:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  # Nginx Service
+  nginx-getcurrency:
+    image: nginx:alpine
+    container_name: nginx-getcurrency
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
+
+  # Redis Service
+  redis_getcurrency:
+    image: redis:7.0
+    container_name: redis_getcurrency
+    ports:
+      - "6382:6379"
+    networks:
+      - app-network
+
+# Docker Networks
+networks:
+  app-network:
+    driver: bridge
+
